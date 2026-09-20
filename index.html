@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ghibli Countdown ✨ Đếm Ngược Thời Gian</title>
+  <meta name="description" content="Trang web đếm ngược thời gian phong cách Studio Ghibli, tính toán Ngày, Giờ, Phút, Giây và phần trăm hoàn thành theo thời gian thực.">
+
+  <!-- Google Fonts: Patrick Hand & Nunito -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Patrick+Hand&display=swap" rel="stylesheet">
+
+  <!-- Clean Asset Path -->
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
+</head>
+<body class="theme-day">
+  <!-- Multi-layered Atmospheric Anime Sky -->
+  <div class="sky-background">
+    <div class="god-rays"></div>
+    <div class="sun-moon"></div>
+    <div class="cloud cloud-1"></div>
+    <div class="cloud cloud-2"></div>
+    <div class="cloud cloud-3"></div>
+    <div class="cloud cloud-4"></div>
+    <canvas id="ambient-canvas"></canvas>
+    <div class="hills hill-distant"></div>
+    <div class="hills hill-back"></div>
+    <div class="hills hill-front"></div>
+  </div>
+
+  <!-- App Wrapper -->
+  <main class="app-container">
+    <!-- Navigation / Toolbar -->
+    <header class="top-nav">
+      <div class="brand">
+        <span class="brand-icon">🍃</span>
+        <span class="brand-text">Ghibli Moments</span>
+      </div>
+      <div class="controls-group">
+        <!-- Theme Selector (Icon-only: ☀️, 🌇, 🌙, 🌌) -->
+        <div class="theme-icon-group" id="theme-icon-group" role="group" aria-label="Chọn vibe không gian Ghibli">
+          <button type="button" class="theme-ico-btn active" data-theme="theme-day" title="Đồng Cỏ ☀️" aria-label="Chủ đề Đồng Cỏ">☀️</button>
+          <button type="button" class="theme-ico-btn" data-theme="theme-sunset" title="Hoàng Hôn 🌇" aria-label="Chủ đề Hoàng Hôn">🌇</button>
+          <button type="button" class="theme-ico-btn" data-theme="theme-night" title="Đêm Sao 🌙" aria-label="Chủ đề Đêm Sao">🌙</button>
+          <button type="button" class="theme-ico-btn" data-theme="theme-cosmic" title="Vũ Trụ Xanh Đen 🌌" aria-label="Chủ đề Vũ Trụ Xanh Đen">🌌</button>
+        </div>
+        <!-- Ambient Sound Toggle -->
+        <button id="audio-btn" class="nav-btn" title="Bật/Tắt âm thanh thiên nhiên thư giãn" aria-label="Bật/Tắt âm thanh">
+          <span id="audio-icon">🔇</span>
+          <span class="btn-text">Gió Lá</span>
+        </button>
+        <!-- Share Link -->
+        <button id="share-btn" class="nav-btn" title="Sao chép liên kết chia sẻ" aria-label="Chia sẻ liên kết">
+          <span>🔗</span>
+          <span class="btn-text">Chia sẻ</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Parchment / Scrapbook Card -->
+    <section class="card parchment-card">
+      <!-- Decorative Washi Tape & Kodama -->
+      <div class="washi-tape-strip"></div>
+      <div class="kodama-corner" title="Kodama - Thần rừng bảo hộ 🌳">🎋</div>
+
+      <!-- Title & Mood Icon -->
+      <div class="event-header">
+        <div class="title-wrapper">
+          <div class="ghibli-badge">
+            <span>🌱 スタジオジブリ風 • Ghibli Moments</span>
+          </div>
+          <input type="text" id="event-title" class="event-title-input" value="Hành trình mùa hè tuyệt vời ✨" placeholder="Nhập tên sự kiện hoặc mục tiêu..." maxlength="60">
+          <span class="edit-badge">✏️ Chạm để đổi tên</span>
+        </div>
+        <div class="header-right-group">
+          <!-- Soot Sprite Mascot with Blinking Eyes -->
+          <div class="soot-mascot" id="interactive-soot" title="Chào bạn! Tôi là Bồ Hóng Susuwatari 🐾 Chạm vào tôi nhé!">
+            <div class="soot-eyes">
+              <span class="eye left-eye"><span class="pupil"></span></span>
+              <span class="eye right-eye"><span class="pupil"></span></span>
+            </div>
+          </div>
+          <div id="status-pill" class="status-pill status-running">
+            <span class="status-dot"></span>
+            <span id="status-text">Đang diễn ra</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Time Pickers Section -->
+      <div class="inputs-grid">
+        <div class="input-card">
+          <label for="start-time">
+            <span class="icon">🌱</span>
+            <span class="label-title">Ngày bắt đầu:</span>
+          </label>
+          <input type="datetime-local" id="start-time" class="ghibli-input" required>
+        </div>
+
+        <div class="input-card">
+          <label for="end-time">
+            <span class="icon">🎯</span>
+            <span class="label-title">Ngày kết thúc:</span>
+          </label>
+          <input type="datetime-local" id="end-time" class="ghibli-input" required>
+        </div>
+      </div>
+
+      <!-- Presets & Display Mode Controls -->
+      <div class="controls-row">
+        <!-- Quick Preset Buttons -->
+        <div class="presets-group">
+          <span class="control-label">Mẫu nhanh:</span>
+          <div class="preset-buttons">
+            <button type="button" class="preset-btn" data-preset="7d">+7 Ngày</button>
+            <button type="button" class="preset-btn" data-preset="30d">+30 Ngày</button>
+            <button type="button" class="preset-btn" data-preset="100d">+100 Ngày</button>
+            <button type="button" class="preset-btn" data-preset="eoy">Hết năm nay</button>
+          </div>
+        </div>
+
+        <!-- Time Display Mode Switcher (Standard vs Total Units) -->
+        <div class="mode-switch-group">
+          <span class="control-label">Kiểu hiển thị:</span>
+          <div class="mode-toggle">
+            <button type="button" id="mode-breakdown-btn" class="mode-btn active" title="Hiển thị chia theo Ngày : Giờ : Phút : Giây">
+              <span>⏱️ Chuẩn (D:H:M:S)</span>
+            </button>
+            <button type="button" id="mode-total-btn" class="mode-btn" title="Hiển thị tổng số Ngày, tổng số Giờ, tổng Phút, tổng Giây">
+              <span>🔢 Tổng Quy Đổi</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Countdown Board -->
+      <div class="countdown-board" id="countdown-board">
+        <div class="time-box">
+          <div class="number-wrapper">
+            <span class="time-number" id="days-val">00</span>
+          </div>
+          <span class="time-unit" id="days-unit">NGÀY</span>
+          <div class="box-decor">🍃</div>
+        </div>
+
+        <div class="time-separator">:</div>
+
+        <div class="time-box">
+          <div class="number-wrapper">
+            <span class="time-number" id="hours-val">00</span>
+          </div>
+          <span class="time-unit" id="hours-unit">GIỜ</span>
+          <div class="box-decor">☁️</div>
+        </div>
+
+        <div class="time-separator">:</div>
+
+        <div class="time-box">
+          <div class="number-wrapper">
+            <span class="time-number" id="minutes-val">00</span>
+          </div>
+          <span class="time-unit" id="minutes-unit">PHÚT</span>
+          <div class="box-decor">🌸</div>
+        </div>
+
+        <div class="time-separator">:</div>
+
+        <div class="time-box">
+          <div class="number-wrapper">
+            <span class="time-number" id="seconds-val">00</span>
+          </div>
+          <span class="time-unit" id="seconds-unit">GIÂY</span>
+          <div class="box-decor">✨</div>
+        </div>
+      </div>
+
+      <!-- Real-time Progress Bar Section -->
+      <div class="progress-section">
+        <div class="progress-header">
+          <div class="progress-title">
+            <span class="mascot-icon">🚲</span>
+            <span>Tiến độ hoàn thành:</span>
+          </div>
+          <div class="percent-badge">
+            <span id="percent-val">0.0000</span>%
+          </div>
+        </div>
+
+        <!-- Custom Ghibli Styled Progress Bar -->
+        <div class="progress-track-wrapper">
+          <div class="progress-track">
+            <div class="progress-fill" id="progress-fill" style="width: 0%;">
+              <div class="progress-sprite" id="progress-sprite" title="Đang trên đường đi!">
+                <div class="soot-sprite">
+                  <span class="sprite-body">🐾</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="track-markers">
+            <span>🌱 0% Bắt đầu</span>
+            <span>🍄 50% Nửa chặng đường</span>
+            <span>🏁 100% Về đích</span>
+          </div>
+        </div>
+
+        <!-- Detailed Statistics Breakdown -->
+        <div class="stats-grid">
+          <div class="stat-pill">
+            <span class="stat-icon">⏳</span>
+            <div class="stat-info">
+              <span class="stat-label">Đã qua:</span>
+              <span class="stat-val" id="stat-elapsed">--</span>
+            </div>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-icon">📅</span>
+            <div class="stat-info">
+              <span class="stat-label">Tổng thời gian:</span>
+              <span class="stat-val" id="stat-total">--</span>
+            </div>
+          </div>
+          <div class="stat-pill">
+            <span class="stat-icon">🌟</span>
+            <div class="stat-info">
+              <span class="stat-label">Còn lại:</span>
+              <span class="stat-val" id="stat-remaining">--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Celebration Box (Shows when 100% reached) -->
+      <div id="celebration-box" class="celebration-box hidden">
+        <div class="celebration-content">
+          <span class="celebration-icon">🎉 🌸 🎋</span>
+          <h3>Chúc mừng bạn đã hoàn thành chặng đường!</h3>
+          <p>Mỗi bước đi đều để lại những kỷ niệm tươi đẹp như trong những thước phim Ghibli.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cozy Footer -->
+    <footer class="ghibli-footer">
+      <p class="quote">“Once you've met someone you never really forget them. It just takes a while for your memories to return.” — <em>Spirited Away</em></p>
+      <div class="footer-links">
+        <span>Tạo bởi tình yêu & Ghibli vibes</span>
+        <span>•</span>
+        <span id="current-clock">--:--:--</span>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden">
+    <span id="toast-icon">✨</span>
+    <span id="toast-message">Đã sao chép link chia sẻ!</span>
+  </div>
+
+  <!-- Clean Asset Path -->
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
